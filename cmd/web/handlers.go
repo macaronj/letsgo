@@ -3,10 +3,10 @@ package main
 import (
 	"errors"
 	"fmt"
-	// "html/template"
 	"net/http"
-	"snippetbox.macaronj/internal/models"
 	"strconv"
+
+	"snippetbox.macaronj/internal/models"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -17,28 +17,13 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, r, err)
 		return
 	}
-	for _, snippet := range snippets {
-		fmt.Fprintf(w, "%+v\n", snippet)
-	}
+	// Call the newTemplateData() helper to get a templateData struct containing
+	// the 'default' data (which for now is just the current year), and add the
+	// snippets slice to it.
+	data := app.newTemplateData(r)
+	data.Snippets = snippets
 
-	// files := []string{
-	// 	"./ui/html/base.tmpl.html",
-	// 	"./ui/html/partials/nav.tmpl.html",
-	// 	"./ui/html/pages/home.tmpl.html",
-	// }
-	//
-	// ts, err := template.ParseFiles(files...)
-	// if err != nil {
-	// 	app.serverError(w, r, err)
-	// 	http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	// 	return
-	// }
-	// err = ts.ExecuteTemplate(w, "base", nil)
-	// if err != nil {
-	// 	app.serverError(w, r, err)
-	// 	http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	// 	return
-	// }
+	app.render(w, r, http.StatusOK, "home.tmpl.html", data)
 
 }
 
@@ -49,8 +34,6 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// SnippetModel's Get() method retrieves the data for a specific record. If no matching record is found,
-	// return a 404 Not Found response.
 	snippet, err := app.snippets.Get(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
@@ -60,8 +43,10 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	// Write the snippet data as a plain-text HTTP response body.
-	fmt.Fprintf(w, "%+v", snippet)
+	// And do the same thing again here...
+	data := app.newTemplateData(r)
+	data.Snippet = snippet
+	app.render(w, r, http.StatusOK, "view.tmpl.html", data)
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
