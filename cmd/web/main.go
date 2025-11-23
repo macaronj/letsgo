@@ -26,6 +26,7 @@ type application struct {
 	templateCache  map[string]*template.Template
 	formDecoder    *form.Decoder
 	sessionManager *scs.SessionManager
+	debug          bool
 }
 
 func main() {
@@ -34,6 +35,10 @@ func main() {
 
 	// Command line flag for MSQL DSN string
 	dsn := flag.String("dsn", "web:pass@/snippetbox?parseTime=true", "MySQL data source name")
+
+	// INFO: Command line flag dor debugging, Exercise 16.2
+	debug := flag.Bool("debug", false, "Debug server errrors")
+
 	// Parse the command line flag, needs to be called before before using the addr variable or default value will be used
 	flag.Parse()
 
@@ -78,6 +83,7 @@ func main() {
 		templateCache:  templateCache,
 		formDecoder:    formDecoder,
 		sessionManager: sessionManager,
+		debug:          *debug,
 	}
 
 	// Initialize a tls.Config struct to hold the non-default TLS settings we
